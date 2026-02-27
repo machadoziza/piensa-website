@@ -1,22 +1,38 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import fs from "node:fs";
+
+function figmaAssetPlugin() {
+  const prefix = "figma:asset/";
+
+  return {
+    name: "figma-asset-resolver",
+    resolveId(source: string) {
+      if (!source.startsWith(prefix)) return null;
+
+      const fileName = source.slice(prefix.length); // e.g. 5535....png
+
+      // Try common locations:
+      const candidates = [
+        path.resolve(process.cwd(), "assets", fileName),
+        path.resolve(process.cwd(), "public", "assets", fileName),
+        path.resolve(process.cwd(), "src", "assets", fileName),
+      ];
+
+      const found = candidates.find((p) => fs.existsSync(p));
+      if (!found) {
+        // Let the build error clearly tell you what file is missing and where it looked
+        throw new Error(
+          `Missing Figma asset: ${fileName}. Looked in:\n` + candidates.join("\n")
+        );
+      }
+
+      return found;
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [
-    // The React and Tailwind plugins are both required for Make, even if
-    // Tailwind is not being actively used – do not remove them
-    react(),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      // Alias @ to the src directory
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-
-  // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
-  assetsInclude: ['**/*.svg', '**/*.csv'],
-})
+  plugins: [react(), figmaAssetPlugin()],
+});
