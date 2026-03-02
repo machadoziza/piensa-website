@@ -2,6 +2,6 @@
   --spacing: 0.25rem;
 }
 
-@import "./tailwind.css";
 @import "./theme.css";
+@import "./tailwind.css";
 @import "./fonts.css";
