@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 import fs from "node:fs";
 
@@ -11,9 +12,8 @@ function figmaAssetPlugin() {
     resolveId(source: string) {
       if (!source.startsWith(prefix)) return null;
 
-      const fileName = source.slice(prefix.length); // e.g. 5535....png
+      const fileName = source.slice(prefix.length);
 
-      // Try common locations:
       const candidates = [
         path.resolve(process.cwd(), "assets", fileName),
         path.resolve(process.cwd(), "public", "assets", fileName),
@@ -22,7 +22,6 @@ function figmaAssetPlugin() {
 
       const found = candidates.find((p) => fs.existsSync(p));
       if (!found) {
-        // Let the build error clearly tell you what file is missing and where it looked
         throw new Error(
           `Missing Figma asset: ${fileName}. Looked in:\n` + candidates.join("\n")
         );
@@ -34,5 +33,5 @@ function figmaAssetPlugin() {
 }
 
 export default defineConfig({
-  plugins: [react(), figmaAssetPlugin()],
+  plugins: [react(), tailwindcss(), figmaAssetPlugin()],
 });
